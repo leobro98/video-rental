@@ -1,0 +1,140 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Leobro.VideoStore.Model;
+
+namespace Leobro.VideoStore
+{
+    public class Store
+    {
+        private IRepository repository;
+        private IPricePolicy pricePolicy;
+
+        public Store(IRepository repository, IPricePolicy pricePolicy)
+        {
+            this.repository = repository;
+            this.pricePolicy = pricePolicy;
+        }
+
+        public int AddCasette(VideoTitle title)
+        {
+            return AddCasette(title, Casette.CasetteStatus.OnShelf);
+        }
+
+        public int AddCasette(VideoTitle title, Casette.CasetteStatus status)
+        {
+            var storedTitle = FindOrCreateTitle(title);
+            int casetteId = repository.AddCasette(storedTitle, status);
+            return casetteId;
+        }
+
+        public Casette GetCasetteOnShelfByTitle(int titleId)
+        {
+            return repository.GetCasetteOnShelfByTitle(titleId);
+        }
+
+        private VideoTitle FindOrCreateTitle(VideoTitle soughtTitle)
+        {
+            List<VideoTitle> titles = repository.FindTitle(soughtTitle.Name, soughtTitle.Year);
+
+            if (titles.Count == 0)
+            {
+                var title = new VideoTitle(soughtTitle.Name, soughtTitle.Year, soughtTitle.Type);
+                int id = repository.AddTitle(title);
+                title = repository.GetTitle(id);
+                return title;
+            }
+            return titles.First();
+        }
+
+        public VideoTitle FindTitle(string name, int year)
+        {
+            return repository.FindTitle(name, year).FirstOrDefault();
+        }
+
+        public void RemoveTitle(int id)
+        {
+            foreach (var casette in repository.GetAllCasettesByTitle(id))
+            {
+                repository.RemoveCasette(casette.Id);
+            }
+            repository.RemoveTitle(id);
+        }
+
+        public void ChangeTitleType(int titleId, VideoTitle.TitleType type)
+        {
+            repository.GetTitle(titleId).Type = type;
+        }
+
+        public List<VideoTitle> GetAllTitles()
+        {
+            return repository.GetAllTitles();
+        }
+
+        public void RentCasette(int casetteId, RentalOptions terms, int customerId)
+        {
+            repository.SaveRental(new Rental(customerId, casetteId, terms));
+            repository.ChangeCasetteStatus(casetteId, Casette.CasetteStatus.Rented);
+
+            var customer = repository.GetCustomer(customerId);
+            int storedBonus = customer.BonusPoints;
+            int bonusForRental = pricePolicy.CalculateBonus(terms.TitleType, terms.RentalDays);
+            customer.BonusPoints = storedBonus + bonusForRental - terms.BonusPointsPayed;
+
+            repository.UpdateCustomer(customer);
+        }
+
+        public void ReturnCasette(int customerId, int casetteId)
+        {
+            repository.ChangeCasetteStatus(casetteId, Casette.CasetteStatus.OnShelf);
+            repository.ReturnCasette(customerId, casetteId);
+        }
+
+        public List<VideoTitle> GetAllTitlesOnShelf()
+        {
+            return repository.GetAllTitlesOnShelf();
+        }
+
+        public int CreateCustomer()
+        {
+            return repository.CreateCustomer(new Customer());
+        }
+
+        public RentalOptions GetRentalTerms(int customerId, VideoTitle.TitleType titleType, int dayCount)
+        {
+            int bonusPoints = repository.GetCustomer(customerId).BonusPoints;
+            return pricePolicy.GetRentalTerms(titleType, dayCount, bonusPoints);
+        }
+
+        public int GetCustomerBonusPoints(int customerId)
+        {
+            return repository.GetCustomer(customerId).BonusPoints;
+        }
+
+        public List<ActiveRental> GetActiveRentals(int customerId)
+        {
+            return repository.GetActiveRentals(customerId)
+                .Select(x => new ActiveRental()
+                {
+                    CustomerId = x.CustomerId,
+                    RentedCasette = repository.GetCasette(x.CasetteId),
+                    Terms = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
+                })
+                .ToList();
+        }
+
+        public List<ActiveRental> GetAllActiveRentals()
+        {
+            return repository.GetAllActiveRentals()
+                .Select(x => new ActiveRental()
+                {
+                    CustomerId = x.CustomerId,
+                    RentedCasette = repository.GetCasette(x.CasetteId),
+                    Terms = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
+                })
+                .ToList();
+        }
+    }
+}
