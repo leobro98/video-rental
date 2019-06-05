@@ -52,7 +52,6 @@
   <ItemGroup>
     <Compile Include="PricePolicyStub.cs" />
     <Compile Include="PricePolicyTest.cs" />
-    <Compile Include="RepositoryMock.cs" />
     <Compile Include="RepositorySpy.cs" />
     <Compile Include="RepositoryTest.cs" />
     <Compile Include="TestHelper.cs" />

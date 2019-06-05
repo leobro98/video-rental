@@ -57,18 +57,20 @@ namespace Leobro.VideoStore.Data
                 return titles;
             }
             return titles.Join(
-                casettes.Where(casette => casette.Status == Casette.CasetteStatus.OnShelf),
+                casettes.Where(casette =>
+                    !rentals.Any(rental =>
+                        rental.CasetteId == casette.Id
+                        && rental.IsActive)),
                 title => title.Id,
                 casette => casette.Title.Id,
                 (title, casette) => title)
                 .ToList();
         }
 
-        public int AddCasette(VideoTitle title, Casette.CasetteStatus status)
+        public int AddCasette(VideoTitle title)
         {
             int id = GetNextCasetteId();
             var casette = new Casette(id, title);
-            casette.Status = status;
             casettes.Add(casette);
             return id;
         }
@@ -87,8 +89,11 @@ namespace Leobro.VideoStore.Data
         public Casette GetCasetteOnShelfByTitle(int titleId)
         {
             return casettes
-                .FirstOrDefault(x => x.Title.Id == titleId &&
-                    x.Status == Casette.CasetteStatus.OnShelf);
+                .FirstOrDefault(casette => 
+                    casette.Title.Id == titleId &&
+                    !rentals.Any(rental =>
+                        rental.CasetteId == casette.Id
+                        && rental.IsActive));
         }
 
         public List<Casette> GetAllCasettesByTitle(int titleId)
@@ -100,13 +105,6 @@ namespace Leobro.VideoStore.Data
             return casettes
                 .Where(x => x.Title.Id == titleId)
                 .ToList();
-        }
-
-        public void ChangeCasetteStatus(int id, Casette.CasetteStatus status)
-        {
-            casettes
-                .First(x => x.Id == id)
-                .Status = status;
         }
 
         public Customer GetCustomer(int id)

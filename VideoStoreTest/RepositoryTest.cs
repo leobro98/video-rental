@@ -66,9 +66,9 @@ namespace Leobro.VideoStoreTest
         public void When_GetAllTitles_Then_AllTypesAreListed()
         {
             var expectedTitles = new List<VideoTitle>();
-            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf));
-            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf));
-            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.Rented));
+            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette());
+            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette());
+            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette());
 
             var titles = repo.GetAllTitles();
 
@@ -79,14 +79,14 @@ namespace Leobro.VideoStoreTest
         public void When_GetAllTitlesOnShelf_Then_ReturnsOnlyThatHasAnyCasetteOnShelf()
         {
             var expectedTitles = new List<VideoTitle>();
-            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf));
-            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf));
+            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette());
+            expectedTitles.Add(helper.AddNewTestTitleWithOneCasette());
 
             var title = helper.GetBrandNewTitle();
             repo.Titles.Add(title);
             var casette = new Casette(repo.Casettes.Count + 1, title);
             repo.Casettes.Add(casette);
-            repo.Rentals.Add(new Rental(1, casette.Id, CreateEmptyOptions()));
+            repo.Rentals.Add(new Rental(1, casette.Id, helper.CreateEmptyOptions()));
 
             var titles = repo.GetAllTitlesOnShelf();
 
@@ -94,15 +94,13 @@ namespace Leobro.VideoStoreTest
         }
 
         [TestMethod]
-        public void When_AddCasette_Then_CasetteWithCorrectStatusIsAdded()
+        public void When_AddCasette_Then_CasetteIsAdded()
         {
             var title = helper.GetBrandNewTitle();
 
-            int idOnShelf = repo.AddCasette(title, Casette.CasetteStatus.OnShelf);
-            int idRented = repo.AddCasette(title, Casette.CasetteStatus.Rented);
+            int id = repo.AddCasette(title);
 
-            Assert.AreEqual(Casette.CasetteStatus.OnShelf, repo.Casettes.Find(x => x.Id == idOnShelf).Status);
-            Assert.AreEqual(Casette.CasetteStatus.Rented, repo.Casettes.Find(x => x.Id == idRented).Status);
+            Assert.AreEqual(id, repo.Casettes[0].Id);
         }
 
         [TestMethod]
@@ -128,43 +126,32 @@ namespace Leobro.VideoStoreTest
         }
 
         [TestMethod]
-        public void When_GetCasetteOnShelfByTitle_Then_CasetteWithCorrectTitleAndStatusReturned()
+        public void When_GetCasetteOnShelfByTitle_Then_CasetteWithCorrectTitleAndNoRentalReturned()
         {
-            var wrongTitle = helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf);
-            var title = helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.Rented);
-            repo.Casettes.Add(CreateOnShelfCasette(title));
+            var wrongTitle = helper.AddNewTestTitleWithOneCasette();
+            var title = helper.AddNewTestTitleWithOneCasette();
+            var rentedCasette = new Casette(repo.Casettes.Count + 1, title);
+            repo.Casettes.Add(rentedCasette);
+            repo.Rentals.Add(new Rental(1, rentedCasette.Id, helper.CreateEmptyOptions()));
 
             var casette = repo.GetCasetteOnShelfByTitle(title.Id);
 
             Assert.AreEqual(title.Id, casette.Title.Id);
-            Assert.AreEqual(Casette.CasetteStatus.OnShelf, casette.Status);
+            Assert.AreEqual(0, repo.Rentals.Count(x => x.CasetteId == casette.Id && x.IsActive));
         }
 
         [TestMethod]
         public void When_GetAllCasettesByTitle_Then_ReturnedOnlyWithTheTitle()
         {
-            var wrongTitle = helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.OnShelf);
-            var title = helper.AddNewTestTitleWithOneCasette(Casette.CasetteStatus.Rented);
-            repo.Casettes.Add(CreateOnShelfCasette(title));
+            var wrongTitle = helper.AddNewTestTitleWithOneCasette();
+            var title = helper.AddNewTestTitleWithOneCasette();
+            repo.Casettes.Add(new Casette(repo.Casettes.Count + 1, title));
 
             var casettes = repo.GetAllCasettesByTitle(title.Id);
 
             Assert.AreEqual(2, casettes.Count);
             Assert.AreSame(title, casettes[0].Title);
             Assert.AreSame(title, casettes[1].Title);
-        }
-
-        [TestMethod]
-        public void When_ChangeCasetteStatus_Then_HitsCorrectCasette()
-        {
-            var title = helper.GetBrandNewTitle();
-            repo.Casettes.Add(CreateOnShelfCasette(title));
-            var casette = CreateOnShelfCasette(title);
-            repo.Casettes.Add(casette);
-
-            repo.ChangeCasetteStatus(casette.Id, Casette.CasetteStatus.Rented);
-
-            Assert.AreEqual(Casette.CasetteStatus.Rented, casette.Status);
         }
 
         [TestMethod]
@@ -234,7 +221,7 @@ namespace Leobro.VideoStoreTest
             Rental rental1 = CreateCustomerAndRental();
             repo.Rentals.Add(rental1);
             int customerId = rental1.CustomerId;
-            var rental2 = new Rental(customerId, rental1.CasetteId + 1, CreateEmptyOptions());
+            var rental2 = new Rental(customerId, rental1.CasetteId + 1, helper.CreateEmptyOptions());
             rental2.IsActive = false;
             repo.Rentals.Add(rental2);
 
@@ -251,7 +238,7 @@ namespace Leobro.VideoStoreTest
             repo.Rentals.Add(rental1);
             Rental rental2 = CreateCustomerAndRental();
             repo.Rentals.Add(rental2);
-            Rental rental3 = new Rental(rental2.CustomerId, rental2.CasetteId + 1, CreateEmptyOptions());
+            Rental rental3 = new Rental(rental2.CustomerId, rental2.CasetteId + 1, helper.CreateEmptyOptions());
             rental3.IsActive = false;
             repo.Rentals.Add(rental3);
 
@@ -270,24 +257,11 @@ namespace Leobro.VideoStoreTest
             Assert.AreEqual(customer.Id, repo.Customers[0].Id);
         }
 
-        private Casette CreateOnShelfCasette(VideoTitle title)
-        {
-            Casette casette = new Casette(repo.Casettes.Count + 1, title);
-            casette.Status = Casette.CasetteStatus.OnShelf;
-            return casette;
-        }
-
         private Rental CreateCustomerAndRental()
         {
             var customer = new Customer(repo.Customers.Count + 1);
             repo.Customers.Add(customer);
-            var rental = new Rental(customer.Id, 1, CreateEmptyOptions());
-            return rental;
-        }
-
-        private static RentalOptions CreateEmptyOptions()
-        {
-            return new RentalOptions(VideoTitle.TitleType.New, 1, 0, false, 0);
+            return new Rental(customer.Id, 1, helper.CreateEmptyOptions());
         }
     }
 }

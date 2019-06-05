@@ -11,7 +11,6 @@ namespace Leobro.VideoStoreTest
         public int AddCasette(VideoTitle storedTitle, Casette.CasetteStatus status)
         {
             LastAddedCasette = new Casette(0, storedTitle);
-            LastAddedCasette.Status = status;
             return 0;
         }
 

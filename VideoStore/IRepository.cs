@@ -50,7 +50,7 @@ namespace Leobro.VideoStore
         /// </summary>
         /// <param name="title">The title of the movie on the casette.</param>
         /// <returns>ID of the new casette.</returns>
-        int AddCasette(VideoTitle storedTitle, Casette.CasetteStatus status);
+        int AddCasette(VideoTitle storedTitle);
 
         /// <summary>
         /// Removes casette from the store.
@@ -78,13 +78,6 @@ namespace Leobro.VideoStore
         /// <param name="titleId">ID of the video title.</param>
         /// <returns>List of all casettes having the same title.</returns>
         List<Casette> GetAllCasettesByTitle(int titleId);
-
-        /// <summary>
-        /// Changes the status of the video casette (rented or on-shelf).
-        /// </summary>
-        /// <param name="id">ID of the casette.</param>
-        /// <param name="status">The casette status to be set.</param>
-        void ChangeCasetteStatus(int id, Casette.CasetteStatus status);
 
         /// <summary>
         /// Creates a new customer to the system.

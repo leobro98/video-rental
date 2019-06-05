@@ -20,19 +20,8 @@ namespace Leobro.VideoStore
 
         public int AddCasette(VideoTitle title)
         {
-            return AddCasette(title, Casette.CasetteStatus.OnShelf);
-        }
-
-        public int AddCasette(VideoTitle title, Casette.CasetteStatus status)
-        {
             var storedTitle = FindOrCreateTitle(title);
-            int casetteId = repository.AddCasette(storedTitle, status);
-            return casetteId;
-        }
-
-        public Casette GetCasetteOnShelfByTitle(int titleId)
-        {
-            return repository.GetCasetteOnShelfByTitle(titleId);
+            return repository.AddCasette(storedTitle);
         }
 
         private VideoTitle FindOrCreateTitle(VideoTitle soughtTitle)
@@ -47,6 +36,11 @@ namespace Leobro.VideoStore
                 return title;
             }
             return titles.First();
+        }
+
+        public Casette GetCasetteOnShelfByTitle(int titleId)
+        {
+            return repository.GetCasetteOnShelfByTitle(titleId);
         }
 
         public VideoTitle FindTitle(string name, int year)
@@ -76,7 +70,6 @@ namespace Leobro.VideoStore
         public void RentCasette(int casetteId, RentalOptions terms, int customerId)
         {
             repository.SaveRental(new Rental(customerId, casetteId, terms));
-            repository.ChangeCasetteStatus(casetteId, Casette.CasetteStatus.Rented);
 
             var customer = repository.GetCustomer(customerId);
             int storedBonus = customer.BonusPoints;
@@ -88,7 +81,6 @@ namespace Leobro.VideoStore
 
         public void ReturnCasette(int customerId, int casetteId)
         {
-            repository.ChangeCasetteStatus(casetteId, Casette.CasetteStatus.OnShelf);
             repository.ReturnCasette(customerId, casetteId);
         }
 
