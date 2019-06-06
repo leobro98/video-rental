@@ -5,6 +5,6 @@ namespace Leobro.VideoStore.Model
     {
         public int CustomerId { get; set; }
         public Casette RentedCasette { get; set; }
-        public RentalOptions Terms { get; set; }
+        public RentalOptions Options { get; set; }
     }
 }

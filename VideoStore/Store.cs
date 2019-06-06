@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Leobro.VideoStore.Model;
 
 namespace Leobro.VideoStore
@@ -67,14 +64,14 @@ namespace Leobro.VideoStore
             return repository.GetAllTitles();
         }
 
-        public void RentCasette(int casetteId, RentalOptions terms, int customerId)
+        public void RentCasette(int casetteId, RentalOptions options, int customerId)
         {
-            repository.SaveRental(new Rental(customerId, casetteId, terms));
+            repository.SaveRental(new Rental(customerId, casetteId, options));
 
             var customer = repository.GetCustomer(customerId);
             int storedBonus = customer.BonusPoints;
-            int bonusForRental = pricePolicy.CalculateBonus(terms.TitleType, terms.RentalDays);
-            customer.BonusPoints = storedBonus + bonusForRental - terms.BonusPointsPayed;
+            int bonusForRental = pricePolicy.CalculateBonus(options.TitleType, options.RentalDays);
+            customer.BonusPoints = storedBonus + bonusForRental - options.BonusPointsPayed;
 
             repository.UpdateCustomer(customer);
         }
@@ -94,10 +91,10 @@ namespace Leobro.VideoStore
             return repository.CreateCustomer(new Customer());
         }
 
-        public RentalOptions GetRentalTerms(int customerId, VideoTitle.TitleType titleType, int dayCount)
+        public RentalOptions GetRentalOptions(int customerId, VideoTitle.TitleType titleType, int dayCount)
         {
             int bonusPoints = repository.GetCustomer(customerId).BonusPoints;
-            return pricePolicy.GetRentalTerms(titleType, dayCount, bonusPoints);
+            return pricePolicy.GetRentalOptions(titleType, dayCount, bonusPoints);
         }
 
         public int GetCustomerBonusPoints(int customerId)
@@ -112,7 +109,7 @@ namespace Leobro.VideoStore
                 {
                     CustomerId = x.CustomerId,
                     RentedCasette = repository.GetCasette(x.CasetteId),
-                    Terms = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
+                    Options = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
                 })
                 .ToList();
         }
@@ -124,7 +121,7 @@ namespace Leobro.VideoStore
                 {
                     CustomerId = x.CustomerId,
                     RentedCasette = repository.GetCasette(x.CasetteId),
-                    Terms = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
+                    Options = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
                 })
                 .ToList();
         }

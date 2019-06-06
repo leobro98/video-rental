@@ -7,7 +7,7 @@ namespace Leobro.VideoStoreTest
     {
         public const int BonusPoints = 3;
 
-        public RentalOptions GetRentalTerms(VideoTitle.TitleType titleType, int rentalDays, int bonusPoints)
+        public RentalOptions GetRentalOptions(VideoTitle.TitleType titleType, int rentalDays, int bonusPoints)
         {
             return new RentalOptions(titleType, rentalDays, bonusPoints, false, 0);
         }

@@ -23,6 +23,7 @@ namespace Leobro.VideoStore.Model
             RentalDays = options.RentalDays;
             Price = options.Price;
             BonusPointsPayed = options.BonusPointsPayed;
+
             IsActive = true;
         }
     }

@@ -155,8 +155,8 @@ namespace Leobro.VideoStoreTest
 
         private void AddRental(int customerId, VideoTitle title, int casetteId)
         {
-            var terms = new RentalOptions(title.Type, 1, 0, false, 0);
-            repo.Rentals.Add(new Rental(customerId, casetteId, terms));
+            var options = new RentalOptions(title.Type, 1, 0, false, 0);
+            repo.Rentals.Add(new Rental(customerId, casetteId, options));
         }
     }
 }

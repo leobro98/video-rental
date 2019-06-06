@@ -8,7 +8,6 @@ namespace Leobro.VideoStore.Model
         public int BonusPointsAvailable { get; private set; }
         public bool IsPaymentByPointsPossible { get; private set; }
         public decimal Price { get; private set; }
-
         public int BonusPointsPayed { get; set; }
 
         public RentalOptions(VideoTitle.TitleType titleType, int rentalDays, int bonusPointsAvailable,

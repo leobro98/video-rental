@@ -104,7 +104,7 @@ namespace Leobro.VideoStore.UI
         private static void RentTitle(VideoTitle title, int days)
         {
             int id = store.AddCasette(title);
-            var terms = store.GetRentalTerms(customerId, title.Type, days);
+            var terms = store.GetRentalOptions(customerId, title.Type, days);
             store.RentCasette(id, terms, customerId);
         }
 
@@ -135,7 +135,7 @@ namespace Leobro.VideoStore.UI
             }
 
             var casette = store.GetCasetteOnShelfByTitle(titleId);
-            var terms = store.GetRentalTerms(customerId, casette.Title.Type, dayCount);
+            var terms = store.GetRentalOptions(customerId, casette.Title.Type, dayCount);
             Console.WriteLine("You have selected: {0}, {1} ({2}) {3} days {4} Eur",
                 casette.Title.Name, casette.Title.Year, terms.TitleType, terms.RentalDays, terms.Price);
             Console.WriteLine("Press y to accept the terms:");
@@ -158,7 +158,7 @@ namespace Leobro.VideoStore.UI
             foreach (var rental in store.GetActiveRentals(customerId))
             {
                 Console.WriteLine("{0} ({1}) {2} days {3} Eur",
-                    rental.RentedCasette.Title.Name, rental.RentedCasette.Title.Type, rental.Terms.RentalDays, rental.Terms.Price);
+                    rental.RentedCasette.Title.Name, rental.RentedCasette.Title.Type, rental.Options.RentalDays, rental.Options.Price);
             }
             Console.WriteLine();
         }

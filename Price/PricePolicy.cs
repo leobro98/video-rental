@@ -12,7 +12,7 @@ namespace Leobro.VideoStore.Price
             this.allTerms = allTerms;
         }
 
-        public RentalOptions GetRentalTerms(VideoTitle.TitleType titleType, int rentalDays, int bonusPoints)
+        public RentalOptions GetRentalOptions(VideoTitle.TitleType titleType, int rentalDays, int bonusPoints)
         {
             var terms = allTerms.Find(x => x.TitleType == titleType);
             bool isPaymentByPointsPossible = IsPaymentByPointsPossible(rentalDays, bonusPoints, terms);
