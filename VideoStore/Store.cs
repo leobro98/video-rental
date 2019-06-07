@@ -64,14 +64,14 @@ namespace Leobro.VideoStore
             return repository.GetAllTitles();
         }
 
-        public void RentCasette(int casetteId, RentalOptions options, int customerId)
+        public void RentCasette(Rental rental)
         {
-            repository.SaveRental(new Rental(customerId, casetteId, options));
+            repository.SaveRental(rental);
 
-            var customer = repository.GetCustomer(customerId);
+            var customer = rental.Customer;
             int storedBonus = customer.BonusPoints;
-            int bonusForRental = pricePolicy.CalculateBonus(options.TitleType, options.RentalDays);
-            customer.BonusPoints = storedBonus + bonusForRental - options.BonusPointsPayed;
+            int bonusForRental = pricePolicy.CalculateBonus(rental.Casette.Title.Type, rental.RentalDays);
+            customer.BonusPoints = storedBonus + bonusForRental - rental.BonusPointsPayed;
 
             repository.UpdateCustomer(customer);
         }
@@ -88,7 +88,7 @@ namespace Leobro.VideoStore
 
         public int CreateCustomer()
         {
-            return repository.CreateCustomer(new Customer());
+            return repository.CreateCustomer();
         }
 
         public RentalOptions GetRentalOptions(int customerId, VideoTitle.TitleType titleType, int dayCount)
@@ -97,33 +97,19 @@ namespace Leobro.VideoStore
             return pricePolicy.GetRentalOptions(titleType, dayCount, bonusPoints);
         }
 
-        public int GetCustomerBonusPoints(int customerId)
+        public Customer GetCustomer(int customerId)
         {
-            return repository.GetCustomer(customerId).BonusPoints;
+            return repository.GetCustomer(customerId);
         }
 
-        public List<ActiveRental> GetActiveRentals(int customerId)
+        public List<Rental> GetActiveRentals(int customerId)
         {
-            return repository.GetActiveRentals(customerId)
-                .Select(x => new ActiveRental()
-                {
-                    CustomerId = x.CustomerId,
-                    RentedCasette = repository.GetCasette(x.CasetteId),
-                    Options = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
-                })
-                .ToList();
+            return repository.GetActiveRentals(customerId);
         }
 
-        public List<ActiveRental> GetAllActiveRentals()
+        public List<Rental> GetAllActiveRentals()
         {
-            return repository.GetAllActiveRentals()
-                .Select(x => new ActiveRental()
-                {
-                    CustomerId = x.CustomerId,
-                    RentedCasette = repository.GetCasette(x.CasetteId),
-                    Options = new RentalOptions(x.TitleType, x.RentalDays, 0, true, x.Price)
-                })
-                .ToList();
+            return repository.GetAllActiveRentals();
         }
     }
 }

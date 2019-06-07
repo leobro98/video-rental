@@ -30,9 +30,14 @@ namespace Leobro.VideoStoreTest
             return new VideoTitle(name, year, repo.Titles.Count + 1);
         }
 
-        public RentalOptions CreateEmptyOptions()
+        public Rental CreateRental(int customerId, Casette casette)
         {
-            return new RentalOptions(VideoTitle.TitleType.New, 0, 0, false, 0);
+            return new Rental(new Customer(customerId), casette)
+            {
+                RentalDays = 0,
+                Price = 0,
+                BonusPointsPayed = 0
+            };
         }
     }
 }

@@ -86,7 +86,7 @@ namespace Leobro.VideoStoreTest
             repo.Titles.Add(title);
             var casette = new Casette(repo.Casettes.Count + 1, title);
             repo.Casettes.Add(casette);
-            repo.Rentals.Add(new Rental(1, casette.Id, helper.CreateEmptyOptions()));
+            repo.Rentals.Add(helper.CreateRental(1, casette));
 
             var titles = repo.GetAllTitlesOnShelf();
 
@@ -132,12 +132,12 @@ namespace Leobro.VideoStoreTest
             var title = helper.AddNewTestTitleWithOneCasette();
             var rentedCasette = new Casette(repo.Casettes.Count + 1, title);
             repo.Casettes.Add(rentedCasette);
-            repo.Rentals.Add(new Rental(1, rentedCasette.Id, helper.CreateEmptyOptions()));
+            repo.Rentals.Add(helper.CreateRental(1, rentedCasette));
 
             var casette = repo.GetCasetteOnShelfByTitle(title.Id);
 
             Assert.AreEqual(title.Id, casette.Title.Id);
-            Assert.AreEqual(0, repo.Rentals.Count(x => x.CasetteId == casette.Id && x.IsActive));
+            Assert.AreEqual(0, repo.Rentals.Count(x => x.Casette.Id == casette.Id && x.IsActive));
         }
 
         [TestMethod]
@@ -205,12 +205,12 @@ namespace Leobro.VideoStoreTest
             Rental rental = CreateCustomerAndRental();
             repo.Rentals.Add(rental);
 
-            repo.ReturnCasette(rental.CustomerId, rental.CasetteId);
+            repo.ReturnCasette(rental.Customer.Id, rental.Casette.Id);
 
             Assert.AreEqual(0, repo.Rentals.Count(
-                x => x.CustomerId == rental.CustomerId
-                && x.CasetteId == rental.CasetteId
-                && x.IsActive == true));
+                x => x.Customer.Id == rental.Customer.Id
+                && x.Casette.Id == rental.Casette.Id
+                && x.IsActive));
         }
 
         [TestMethod]
@@ -220,15 +220,15 @@ namespace Leobro.VideoStoreTest
             repo.Rentals.Add(irrelevantRental);
             Rental rental1 = CreateCustomerAndRental();
             repo.Rentals.Add(rental1);
-            int customerId = rental1.CustomerId;
-            var rental2 = new Rental(customerId, rental1.CasetteId + 1, helper.CreateEmptyOptions());
+            int customerId = rental1.Customer.Id;
+            var rental2 = helper.CreateRental(customerId, new Casette(repo.Casettes.Count + 1, helper.GetBrandNewTitle()));
             rental2.IsActive = false;
             repo.Rentals.Add(rental2);
 
             var rentals = repo.GetActiveRentals(customerId);
 
             Assert.AreEqual(1, rentals.Count);
-            Assert.AreEqual(customerId, rentals[0].CustomerId);
+            Assert.AreEqual(customerId, rentals[0].Customer.Id);
         }
 
         [TestMethod]
@@ -238,7 +238,8 @@ namespace Leobro.VideoStoreTest
             repo.Rentals.Add(rental1);
             Rental rental2 = CreateCustomerAndRental();
             repo.Rentals.Add(rental2);
-            Rental rental3 = new Rental(rental2.CustomerId, rental2.CasetteId + 1, helper.CreateEmptyOptions());
+            Casette renturnedCasette = new Casette(repo.Casettes.Count + 1, helper.GetBrandNewTitle());
+            Rental rental3 = helper.CreateRental(rental2.Customer.Id, renturnedCasette);
             rental3.IsActive = false;
             repo.Rentals.Add(rental3);
 
@@ -250,18 +251,18 @@ namespace Leobro.VideoStoreTest
         [TestMethod]
         public void When_CreateCustomer_Then_CustomerExists()
         {
-            Customer customer = new Customer(repo.Customers.Count + 1);
-            repo.CreateCustomer(customer);
+            int id = repo.CreateCustomer();
 
             Assert.AreEqual(1, repo.Customers.Count);
-            Assert.AreEqual(customer.Id, repo.Customers[0].Id);
+            Assert.AreEqual(id, repo.Customers[0].Id);
         }
 
         private Rental CreateCustomerAndRental()
         {
             var customer = new Customer(repo.Customers.Count + 1);
             repo.Customers.Add(customer);
-            return new Rental(customer.Id, 1, helper.CreateEmptyOptions());
+            var casette = new Casette(repo.Casettes.Count + 1, helper.GetBrandNewTitle());
+            return helper.CreateRental(customer.Id, casette);
         }
     }
 }

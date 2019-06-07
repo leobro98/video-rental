@@ -82,9 +82,8 @@ namespace Leobro.VideoStore
         /// <summary>
         /// Creates a new customer to the system.
         /// </summary>
-        /// <param name="customer">The customer object with all data needed for saving.</param>
         /// <returns>ID of the new created customer.</returns>
-        int CreateCustomer(Customer customer);
+        int CreateCustomer();
 
         /// <summary>
         /// Retrieves the customer by their ID.

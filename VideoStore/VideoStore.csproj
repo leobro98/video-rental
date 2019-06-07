@@ -40,7 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomerNotFoundException.cs" />
-    <Compile Include="Model\ActiveRental.cs" />
     <Compile Include="Model\Casette.cs" />
     <Compile Include="IPricePolicy.cs" />
     <Compile Include="IRepository.cs" />

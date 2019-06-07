@@ -2,7 +2,7 @@
 
 namespace Leobro.VideoStore.Price
 {
-    public class Terms
+    public class RentalTerms
     {
         public VideoTitle.TitleType TitleType { get; set; }
 

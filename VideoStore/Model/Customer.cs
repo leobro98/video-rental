@@ -6,9 +6,6 @@ namespace Leobro.VideoStore.Model
         public int Id { get; set; }
         public int BonusPoints { get; set; }
 
-        public Customer()
-        { }
-
         public Customer(int id)
         {
             Id = id;

@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
 using Leobro.VideoStore;
 using Leobro.VideoStore.Model;
@@ -82,14 +81,19 @@ namespace Leobro.VideoStoreTest
             helper.AddNewTestTitleWithOneCasette();
             int casetteId = repo.Casettes[0].Id;
             int customerId = 1;
-            repo.Customers.Add(new Customer(customerId));
-            var terms = helper.CreateEmptyOptions();
+            Customer customer = new Customer(customerId);
+            repo.Customers.Add(customer);
 
-            store.RentCasette(casetteId, terms, customerId);
+            store.RentCasette(new Rental(customer, repo.Casettes[0])
+            {
+                RentalDays = 0,
+                Price = 0,
+                BonusPointsPayed = 0
+            });
 
             Assert.AreEqual(1, repo.Rentals.Count);
-            Assert.AreEqual(casetteId, repo.Rentals[0].CasetteId);
-            Assert.AreEqual(customerId, repo.Rentals[0].CustomerId);
+            Assert.AreEqual(casetteId, repo.Rentals[0].Casette.Id);
+            Assert.AreEqual(customerId, repo.Rentals[0].Customer.Id);
             Assert.AreEqual(PricePolicyStub.BonusPoints, repo.Customers[0].BonusPoints);
         }
 
@@ -99,49 +103,51 @@ namespace Leobro.VideoStoreTest
             helper.AddNewTestTitleWithOneCasette();
             int casetteId = repo.Casettes[0].Id;
             int customerId = 1;
-            repo.Customers.Add(new Customer(customerId));
-            repo.Rentals.Add(new Rental(customerId, casetteId, helper.CreateEmptyOptions()));
+            Customer customer = new Customer(customerId);
+            repo.Customers.Add(customer);
+            repo.Rentals.Add(helper.CreateRental(customer.Id, repo.Casettes[0]));
 
             store.ReturnCasette(customerId, casetteId);
 
-            Assert.AreEqual(0, repo.Rentals.Count(x => x.CustomerId == customerId && x.IsActive == true));
-            Assert.AreEqual(0, repo.Rentals.Count(x => x.CasetteId == casetteId && x.IsActive == true));
+            Assert.AreEqual(0, repo.Rentals.Count(x => x.Customer.Id == customerId && x.IsActive));
+            Assert.AreEqual(0, repo.Rentals.Count(x => x.Casette.Id == casetteId && x.IsActive));
         }
 
         [TestMethod]
         public void CustomerCanReviewTheirActiveRentals()
         {
             int customerId = 1;
-            repo.Customers.Add(new Customer(customerId));
+            Customer customer = new Customer(customerId);
+            repo.Customers.Add(customer);
 
             string name1 = "Matrix 11";
-            AddTitleAndRentCasette(customerId, name1, 2015, VideoTitle.TitleType.New);
+            AddTitleAndRentCasette(customer, name1, 2015, VideoTitle.TitleType.New);
 
             string name2 = "Spider Man";
-            AddTitleAndRentCasette(customerId, name2, 2000, VideoTitle.TitleType.Regular);
+            AddTitleAndRentCasette(customer, name2, 2000, VideoTitle.TitleType.Regular);
 
             string name3 = "Out of Africa";
-            AddTitleAndRentCasette(customerId, name3, 1975, VideoTitle.TitleType.Old);
+            AddTitleAndRentCasette(customer, name3, 1975, VideoTitle.TitleType.Old);
 
-            List<ActiveRental> rentals = store.GetActiveRentals(customerId);
+            var rentals = store.GetActiveRentals(customerId);
 
             Assert.AreEqual(3, rentals.Count);
-            Assert.IsTrue(rentals.Any(x => x.RentedCasette.Title.Name == name1));
-            Assert.IsTrue(rentals.Any(x => x.RentedCasette.Title.Name == name2));
-            Assert.IsTrue(rentals.Any(x => x.RentedCasette.Title.Name == name3));
+            Assert.IsTrue(rentals.Any(x => x.Casette.Title.Name == name1));
+            Assert.IsTrue(rentals.Any(x => x.Casette.Title.Name == name2));
+            Assert.IsTrue(rentals.Any(x => x.Casette.Title.Name == name3));
         }
 
-        private void AddTitleAndRentCasette(int customerId, string name, int year, VideoTitle.TitleType titleType)
+        private void AddTitleAndRentCasette(Customer customer, string name, int year, VideoTitle.TitleType titleType)
         {
             var title = AddTitle(name, year, titleType);
             int casetteId = AddCasette(title);
-            AddRental(customerId, title, casetteId);
+            AddRental(customer, title, casetteId);
         }
 
         private VideoTitle AddTitle(string name, int year, VideoTitle.TitleType titleType)
         {
-            var title = new VideoTitle(name, year, titleType);
-            title = new VideoTitle(title, repo.Titles.Count + 1);
+            var title = new VideoTitle(name, year, repo.Titles.Count + 1);
+            title.Type = titleType;
             repo.Titles.Add(title);
             return title;
         }
@@ -153,10 +159,10 @@ namespace Leobro.VideoStoreTest
             return casetteId;
         }
 
-        private void AddRental(int customerId, VideoTitle title, int casetteId)
+        private void AddRental(Customer customer, VideoTitle title, int casetteId)
         {
-            var options = new RentalOptions(title.Type, 1, 0, false, 0);
-            repo.Rentals.Add(new Rental(customerId, casetteId, options));
+            var casette = new Casette(casetteId, title);
+            repo.Rentals.Add(new Rental(customer, casette));
         }
     }
 }

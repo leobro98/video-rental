@@ -59,7 +59,7 @@ namespace Leobro.VideoStore.Data
             return titles.Join(
                 casettes.Where(casette =>
                     !rentals.Any(rental =>
-                        rental.CasetteId == casette.Id
+                        rental.Casette.Id == casette.Id
                         && rental.IsActive)),
                 title => title.Id,
                 casette => casette.Title.Id,
@@ -92,7 +92,7 @@ namespace Leobro.VideoStore.Data
                 .FirstOrDefault(casette => 
                     casette.Title.Id == titleId &&
                     !rentals.Any(rental =>
-                        rental.CasetteId == casette.Id
+                        rental.Casette.Id == casette.Id
                         && rental.IsActive));
         }
 
@@ -132,20 +132,14 @@ namespace Leobro.VideoStore.Data
 
         public void SaveRental(Rental rental)
         {
-            var customer = customers.FirstOrDefault(x => x.Id == rental.CustomerId);
-
-            if (customer == null)
-            {
-                throw new CustomerNotFoundException();
-            }
             rentals.Add(rental);
         }
 
         public void ReturnCasette(int customerId, int casetteId)
         {
             rentals
-                .First(x => x.CustomerId == customerId &&
-                    x.CasetteId == casetteId)
+                .First(x => x.Customer.Id == customerId &&
+                    x.Casette.Id == casetteId)
                 .IsActive = false;
         }
 
@@ -156,7 +150,7 @@ namespace Leobro.VideoStore.Data
                 return rentals;
             }
             return rentals
-                .Where(x => x.CustomerId == customerId && x.IsActive)
+                .Where(x => x.Customer.Id == customerId && x.IsActive)
                 .ToList();
         }
 
@@ -167,10 +161,10 @@ namespace Leobro.VideoStore.Data
                 .ToList();
         }
 
-        public int CreateCustomer(Customer customer)
+        public int CreateCustomer()
         {
             int id = GetNextCustomerId();
-            customers.Add(new Customer(id, customer.BonusPoints));
+            customers.Add(new Customer(id));
             return id;
         }
 

@@ -2,18 +2,14 @@
 using Leobro.VideoStore.Model;
 using Leobro.VideoStore.Price;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Leobro.VideoStoreTest
 {
     [TestClass]
     public class PricePolicyTest
     {
-        private static readonly Terms newTitleTerms = new Terms()
+        private static readonly RentalTerms newTitleTerms = new RentalTerms()
         {
             TitleType = VideoTitle.TitleType.New,
             FlatPeriodDays = 0,
@@ -24,7 +20,7 @@ namespace Leobro.VideoStoreTest
             PointsForRent = 2
         };
 
-        private static readonly Terms regularTitleTerms = new Terms()
+        private static readonly RentalTerms regularTitleTerms = new RentalTerms()
         {
             TitleType = VideoTitle.TitleType.Regular,
             FlatPeriodDays = 3,
@@ -34,7 +30,7 @@ namespace Leobro.VideoStoreTest
             RentalDayPriceInPoints = 0,
             PointsForRent = 1
         };
-        private static readonly Terms oldTitleTerms = new Terms()
+        private static readonly RentalTerms oldTitleTerms = new RentalTerms()
         {
             TitleType = VideoTitle.TitleType.Old,
             FlatPeriodDays = 5,
@@ -45,7 +41,7 @@ namespace Leobro.VideoStoreTest
             PointsForRent = 1
         };
 
-        private List<Terms> allTerms = new List<Terms>() {
+        private List<RentalTerms> allTerms = new List<RentalTerms>() {
             newTitleTerms,
             regularTitleTerms,
             oldTitleTerms
@@ -77,7 +73,7 @@ namespace Leobro.VideoStoreTest
         {
             int bonusPoints = 0;
             var titleType = VideoTitle.TitleType.Regular;
-            Terms terms = regularTitleTerms;
+            RentalTerms terms = regularTitleTerms;
 
             int dayCount = terms.FlatPeriodDays - 1;
             decimal expectedPrice = terms.FlatPeriodFee;
@@ -100,7 +96,7 @@ namespace Leobro.VideoStoreTest
         {
             int bonusPoints = 0;
             var titleType = VideoTitle.TitleType.Old;
-            Terms terms = regularTitleTerms;
+            RentalTerms terms = regularTitleTerms;
 
             int dayCount = oldTitleTerms.FlatPeriodDays - 1;
             decimal expectedPrice = oldTitleTerms.FlatPeriodFee;

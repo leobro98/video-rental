@@ -5,9 +5,9 @@ namespace Leobro.VideoStore.Price
 {
     public class PricePolicy : IPricePolicy
     {
-        private List<Terms> allTerms;
+        private List<RentalTerms> allTerms;
 
-        public PricePolicy(List<Terms> allTerms)
+        public PricePolicy(List<RentalTerms> allTerms)
         {
             this.allTerms = allTerms;
         }
@@ -17,11 +17,12 @@ namespace Leobro.VideoStore.Price
             var terms = allTerms.Find(x => x.TitleType == titleType);
             bool isPaymentByPointsPossible = IsPaymentByPointsPossible(rentalDays, bonusPoints, terms);
             decimal price = terms.FlatPeriodFee + GetTrailingDaysPrice(rentalDays, terms);
+            int priceInPoints = GetPriceInPoints(rentalDays, terms);
 
-            return new RentalOptions(titleType, rentalDays, bonusPoints, isPaymentByPointsPossible, price);
+            return new RentalOptions(titleType, rentalDays, bonusPoints, isPaymentByPointsPossible, price, priceInPoints);
         }
 
-        private decimal GetTrailingDaysPrice(int rentalDays, Terms terms)
+        private decimal GetTrailingDaysPrice(int rentalDays, RentalTerms terms)
         {
             if (rentalDays > terms.FlatPeriodDays)
             {
@@ -30,11 +31,15 @@ namespace Leobro.VideoStore.Price
             return 0;
         }
 
-        private bool IsPaymentByPointsPossible(int rentalDays, int bonusPoints, Terms terms)
+        private bool IsPaymentByPointsPossible(int rentalDays, int bonusPoints, RentalTerms terms)
         {
-            int rentalPriceInPoints = rentalDays * terms.RentalDayPriceInPoints;
+            int priceInPoints = GetPriceInPoints(rentalDays, terms);
+            return terms.IsPaymentByPointsAllowed && (bonusPoints >= priceInPoints);
+        }
 
-            return terms.IsPaymentByPointsAllowed && (bonusPoints >= rentalPriceInPoints);
+        private static int GetPriceInPoints(int rentalDays, RentalTerms terms)
+        {
+            return rentalDays * terms.RentalDayPriceInPoints;
         }
 
         public int CalculateBonus(VideoTitle.TitleType titleType, int rentalDays)
