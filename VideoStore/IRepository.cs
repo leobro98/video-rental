@@ -3,6 +3,9 @@ using Leobro.VideoStore.Model;
 
 namespace Leobro.VideoStore
 {
+    /// <summary>
+    /// Repository to store video rental data.
+    /// </summary>
     public interface IRepository
     {
         /// <summary>
@@ -23,6 +26,7 @@ namespace Leobro.VideoStore
         /// </summary>
         /// <param name="id">ID of the title to get.</param>
         /// <returns>Video title with the given ID.</returns>
+        /// <exception cref="TitleNotFoundException">If the title with this ID does not exist.</exception>
         VideoTitle GetTitle(int id);
 
         /// <summary>
@@ -70,6 +74,7 @@ namespace Leobro.VideoStore
         /// </summary>
         /// <param name="titleId">ID of the video title.</param>
         /// <returns>First found casette or <c>null</c> if nothing is found.</c></returns>
+        /// <exception cref="CasetteNotFoundException">If no casette available for rent of this title is found.</exception>
         Casette GetCasetteOnShelfByTitle(int titleId);
 
         /// <summary>
@@ -90,12 +95,14 @@ namespace Leobro.VideoStore
         /// </summary>
         /// <param name="id">ID of the customer.</param>
         /// <returns>The customer with the given ID.</returns>
+        /// <exception cref="CustomerNotFoundException">If the customer with this ID does not exist.</exception>
         Customer GetCustomer(int id);
 
         /// <summary>
         /// Saves the new data for the customer.
         /// </summary>
         /// <param name="customer">The customer object with all data needed for saving.</param>
+        /// <exception cref="CustomerNotFoundException">If the customer with this ID does not exist.</exception>
         void UpdateCustomer(Customer customer);
 
         /// <summary>

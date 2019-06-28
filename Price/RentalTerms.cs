@@ -2,22 +2,28 @@
 
 namespace Leobro.VideoStore.Price
 {
+    /// <summary>
+    /// The set of rental terms for a type of a video title.
+    /// </summary>
     public class RentalTerms
     {
+        /// <summary>
+        /// The type of the video title for this set of terms.
+        /// </summary>
         public VideoTitle.TitleType TitleType { get; set; }
 
         /// <summary>
-        /// Rent for the first n days costs some fixed price. This property is this number of days.
+        /// Rent for the first n days costs some fixed price. The property is this number of days.
         /// </summary>
         public int FlatPeriodDays { get; set; }
 
         /// <summary>
-        /// Rent for the first n days costs some fixed price. This property is this fixed price.
+        /// Rent for the first n days costs some fixed price. The property is this fixed price.
         /// </summary>
         public decimal FlatPeriodFee { get; set; }
 
         /// <summary>
-        /// This is the price for every day out of the <see cref="FlatPeriodDays"/>.
+        /// This is the price for every day out of the <see cref="FlatPeriodDays"/> period.
         /// </summary>
         public decimal TrailingFee { get; set; }
 

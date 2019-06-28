@@ -2,6 +2,9 @@
 
 namespace Leobro.VideoStore.Model
 {
+    /// <summary>
+    /// Information about the film.
+    /// </summary>
     public class VideoTitle
     {
         public enum TitleType

@@ -39,7 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomerNotFoundException.cs" />
+    <Compile Include="Exception\CasetteNotFoundException.cs" />
+    <Compile Include="Exception\CustomerNotFoundException.cs" />
     <Compile Include="Model\Casette.cs" />
     <Compile Include="IPricePolicy.cs" />
     <Compile Include="IRepository.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="Store.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\VideoTitle.cs" />
+    <Compile Include="Exception\TitleNotFoundException.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

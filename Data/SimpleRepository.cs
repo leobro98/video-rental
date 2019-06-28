@@ -4,6 +4,9 @@ using Leobro.VideoStore.Model;
 
 namespace Leobro.VideoStore.Data
 {
+    /// <summary>
+    /// Simplest implementation of the <see cref="IRepository"/> interface, holding all data in memory.
+    /// </summary>
     public class SimpleRepository : IRepository
     {
         protected List<VideoTitle> titles;
@@ -34,14 +37,20 @@ namespace Leobro.VideoStore.Data
 
         public VideoTitle GetTitle(int id)
         {
-            return titles
+            var title = titles
                 .FirstOrDefault(x => x.Id == id);
+
+            if (title == null)
+            {
+                throw new TitleNotFoundException();
+            }
+            return title;
         }
 
         public List<VideoTitle> FindTitle(string name, int year)
         {
             return titles
-                .Where(x => x.Name == name && x.Year == year)
+                .Where(x => x.Name.ToLower() == name.ToLower() && x.Year == year)
                 .ToList();
         }
 
@@ -88,12 +97,17 @@ namespace Leobro.VideoStore.Data
 
         public Casette GetCasetteOnShelfByTitle(int titleId)
         {
-            return casettes
-                .FirstOrDefault(casette => 
+            var casetteAvailable = casettes
+                .FirstOrDefault(casette =>
                     casette.Title.Id == titleId &&
                     !rentals.Any(rental =>
                         rental.Casette.Id == casette.Id
                         && rental.IsActive));
+            if (casetteAvailable == null)
+            {
+                throw new CasetteNotFoundException();
+            }
+            return casetteAvailable;
         }
 
         public List<Casette> GetAllCasettesByTitle(int titleId)

@@ -2,6 +2,9 @@
 
 namespace Leobro.VideoStore.Model
 {
+    /// <summary>
+    /// Data about the rental of a video casette.
+    /// </summary>
     public class Rental
     {
         public Customer Customer { get; private set; }

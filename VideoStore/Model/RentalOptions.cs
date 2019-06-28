@@ -2,6 +2,10 @@
 {
     public class RentalOptions
     {
+        /// <summary>
+        /// Groups data that can be presented to a customer about the rental of a video title.
+        /// Contains all possible options for the rental to let customer choose one.
+        /// </summary>
         public VideoTitle.TitleType TitleType { get; private set; }
         public int RentalDays { get; private set; }
         public int PointsAvailable { get; private set; }

@@ -17,8 +17,8 @@ The core component is VideoStore, three other components are plug-ins for it. Wh
 
 **UI** just uses the VideoStore API presenting the simplest possible user interface in the console.
 
-`PricePolicy` in **Price** component implements `IPricePolicy` interface residing in the **VideoStore**. This enables to easily adjust the price calculation to the changing business needs without recompiling other parts of the application.
+`PricePolicy` in **Price** component implements `IPricePolicy` interface residing in the **VideoStore**. This enables easy adjusting of the price calculation to the changing business needs without recompiling other parts of the application.
 
-`SimpleRepository` in the **Data** component implements `IRepository` interface residing in the **VideoStore**. This enables easy switching to some or another database rebuilding only this component.
+`SimpleRepository` in the **Data** component implements `IRepository` interface residing in the **VideoStore**. This enables easy switching to some or another database rebuilding only this component. When using a database, it would necessary to implement the mapping from data entities defined in this component to business objects defined in `Leobro.VideoStore.Model` namespace.
 
 The solution contains also the suite of unit tests in the **VideoStoreTest** project.

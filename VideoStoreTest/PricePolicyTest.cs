@@ -63,7 +63,7 @@ namespace Leobro.VideoStoreTest
             int dayCount = 3;
             decimal expectedPrice = newTitleTerms.TrailingFee * dayCount;
 
-            var terms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            var terms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
 
             Assert.AreEqual(expectedPrice, terms.Price);
         }
@@ -77,17 +77,17 @@ namespace Leobro.VideoStoreTest
 
             int dayCount = terms.FlatPeriodDays - 1;
             decimal expectedPrice = terms.FlatPeriodFee;
-            var rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            var rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
 
             dayCount = terms.FlatPeriodDays;
             expectedPrice = terms.FlatPeriodFee;
-            rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
 
             dayCount = terms.FlatPeriodDays + 1;
             expectedPrice = terms.FlatPeriodFee + (dayCount - terms.FlatPeriodDays) * terms.TrailingFee;
-            rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
         }
 
@@ -100,17 +100,17 @@ namespace Leobro.VideoStoreTest
 
             int dayCount = oldTitleTerms.FlatPeriodDays - 1;
             decimal expectedPrice = oldTitleTerms.FlatPeriodFee;
-            var rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            var rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
 
             dayCount = oldTitleTerms.FlatPeriodDays;
             expectedPrice = oldTitleTerms.FlatPeriodFee;
-            rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
 
             dayCount = oldTitleTerms.FlatPeriodDays + 1;
             expectedPrice = oldTitleTerms.FlatPeriodFee + (dayCount - oldTitleTerms.FlatPeriodDays) * oldTitleTerms.TrailingFee;
-            rentalTerms = policy.GetRentalOptions(titleType, dayCount, bonusPoints);
+            rentalTerms = policy.CalculateRentalOptions(titleType, dayCount, bonusPoints);
             Assert.AreEqual(expectedPrice, rentalTerms.Price);
         }
     }

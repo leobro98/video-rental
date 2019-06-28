@@ -7,6 +7,16 @@ using Leobro.VideoStore.Price;
 
 namespace Leobro.VideoStore.UI
 {
+    /// <summary>
+    /// <para>Main class of the application. Combines together other application components. Represents the user
+    /// interface, simplest, but sufficient for the rental store management.</para>
+    /// <para>Contains configuration for the <see cref="PricePolicy"/> plugin in the form of the <see cref="RentalTerms"/>
+    /// list. In real-life application this configuration can come from an external configuration file or from a
+    /// database. However, it is left hard-coded here for the sake of simplicity.</para>
+    /// <para>The class contains only interaction with the <see cref="Store"/> component, all console output texts
+    /// and formatting are delegated to the <see cref="Interactor"/> class.</para>
+    /// <para>The repository can be pre-filled with some test data, if "test" command line argument is passed.</para>
+    /// </summary>
     public class ConsoleUI
     {
         private static Store store;
@@ -52,20 +62,12 @@ namespace Leobro.VideoStore.UI
                 InitializeInventory();
             }
 
-            ShowGreeting();
-
-            var titles = store.GetAllTitlesOnShelf();
-            while (titles.Count > 0)
+            string command;
+            do
             {
-                ListTitles(titles);
-                bool wasRented = MakeDeal();
-                if (wasRented)
-                {
-                    ShowActiveRentals();
-                }
-                titles = store.GetAllTitlesOnShelf();
-            }
-            ShowGoodBye();
+                command = Interactor.GetMenuCommand();
+                ExecuteCommand(command);
+            } while (Interactor.IsFinished(command));
         }
 
         private static void InitializeStore()
@@ -83,20 +85,32 @@ namespace Leobro.VideoStore.UI
         private static void InitializeInventory()
         {
             customerId = store.CreateCustomer();
+            var customer = store.GetCustomer(customerId);
+            customer.BonusPoints = 100;
 
-            var title = new VideoTitle("Out of Africa", 1985, VideoTitle.TitleType.Old);
-            RentTitle(title, 7);
+            // rented casettes
+            VideoTitle title = new VideoTitle("Out of Africa", 1985, VideoTitle.TitleType.Old);
+            store.AddCasette(title);
+            RentTitle(store.FindTitle(title.Name, title.Year), 7);
+
             title = new VideoTitle("Spider-Man", 2002, VideoTitle.TitleType.Regular);
-            RentTitle(title, 5);
-            title = new VideoTitle("Spider-Man 3", 2007, VideoTitle.TitleType.Regular);
-            RentTitle(title, 2);
+            store.AddCasette(title);
+            RentTitle(store.FindTitle(title.Name, title.Year), 5);
 
+            title = new VideoTitle("Spider-Man 3", 2007, VideoTitle.TitleType.Regular);
+            store.AddCasette(title);
+            RentTitle(store.FindTitle(title.Name, title.Year), 2);
+
+            // available casettes
             title = new VideoTitle("Parallels", 2015, VideoTitle.TitleType.New);
             store.AddCasette(title);
+
             title = new VideoTitle("Casablanka", 1943, VideoTitle.TitleType.Old);
             store.AddCasette(title);
+
             title = new VideoTitle("District 9", 2009, VideoTitle.TitleType.Regular);
             store.AddCasette(title);
+
             title = new VideoTitle("Skin Trade", 2014, VideoTitle.TitleType.New);
             store.AddCasette(title);
         }
@@ -104,104 +118,202 @@ namespace Leobro.VideoStore.UI
         private static void RentTitle(VideoTitle title, int days)
         {
             var customer = store.GetCustomer(customerId);
-            int casetteId = store.AddCasette(title);
             var casette = store.GetCasetteOnShelfByTitle(title.Id);
             var options = store.GetRentalOptions(customerId, title.Type, days);
-            var rental = new Rental(customer, casette) {
+            var rental = new Rental(customer, casette)
+            {
                 RentalDays = days,
                 Price = options.Price
             };
             store.RentCasette(rental);
         }
 
-        private static void ShowGreeting()
+        private static void ExecuteCommand(string command)
         {
-            Console.WriteLine("Welcome to our video store! Your customer ID is {0}", customerId);
+            switch (command)
+            {
+                case Interactor.ADD_FILM_CMD:
+                    AddFilm();
+                    break;
+                case Interactor.ADD_CASETTE_CMD:
+                    AddCasette();
+                    break;
+                case Interactor.REMOVE_FILM_CMD:
+                    RemoveFilm();
+                    break;
+                case Interactor.CHANGE_TYPE_CMD:
+                    ChangeFilmType();
+                    break;
+                case Interactor.ALL_FILMS_CMD:
+                    ListAllFilms();
+                    break;
+                case Interactor.ALL_ACTIVE_RENTALS_CMD:
+                    ListAllAciveRentals();
+                    break;
+                case Interactor.CREATE_CUSTOMER_CMD:
+                    CreateCustomer();
+                    break;
+                case Interactor.ALL_CUSTOMER_RENTALS_CMD:
+                    ListCustomerRentals();
+                    break;
+                case Interactor.ALL_FILMS_AVAILABLE_CMD:
+                    ListFilmsAvailable();
+                    break;
+                case Interactor.RENT_FILM_CMD:
+                    RentFilm();
+                    break;
+                case Interactor.RETURN_CASETTE_CMD:
+                    ReturnCasette();
+                    break;
+                case Interactor.QUIT_CMD:
+                    // do nothing, then exit the main menu loop
+                    break;
+            }
         }
 
-        private static void ListTitles(List<VideoTitle> titles)
+        /// <summary>
+        /// Adds a new video title to the repository.
+        /// </summary>
+        private static void AddFilm()
         {
-            Console.WriteLine("We have the following movies available for rental:");
-            Console.WriteLine();
-            foreach (var title in titles)
+            string name = Interactor.AddFilm.GetFilmName();
+            int year = Interactor.AddFilm.GetYear();
+            var title = new VideoTitle(name, year);
+
+            int casetteCount = Interactor.AddFilm.GetCasetteCount();
+            for (int i = 0; i < casetteCount; i++)
             {
-                Console.WriteLine("({0}) {1}, {2}", title.Id, title.Name, title.Year);
+                store.AddCasette(title);
             }
-            Console.WriteLine();
         }
 
-        private static bool MakeDeal()
+        /// <summary>
+        /// Adds an additional casette for an existing video title.
+        /// </summary>
+        private static void AddCasette()
         {
-            int titleId = ReadInteger("Please enter the movie ID to rent and press Enter (or bare Enter to exit):");
-            int dayCount = ReadInteger("Enter the number of days and press Enter:");
-            if (dayCount <= 0)
-            {
-                Console.WriteLine("Wrong number");
-                return false;
-            }
 
-            var casette = store.GetCasetteOnShelfByTitle(titleId);
-            var options = store.GetRentalOptions(customerId, casette.Title.Type, dayCount);
-            Console.WriteLine("You have selected: {0}, {1} ({2}) {3} days {4} Eur",
-                casette.Title.Name, casette.Title.Year, options.TitleType, options.RentalDays, options.Price);
-            Console.WriteLine("Press y to accept the terms:");
-            string decision = Console.ReadLine();
-            Console.WriteLine();
-            
-            bool success = false;
-            if (decision.ToLower() == "y")
+            string name = Interactor.FindFilm.GetFilmName(Interactor.ADD_CASETTE_HEADING);
+            int year = Interactor.FindFilm.GetYear();
+            var title = store.FindTitle(name, year);
+
+            if (title == null)
             {
-                success = true;
-                Customer customer = store.GetCustomer(customerId);
-                store.RentCasette(new Rental(customer, casette)
-                {
-                    RentalDays = dayCount,
-                    Price = options.Price,
-                    BonusPointsPayed = 0
-                });
+                Interactor.FindFilm.ShowFilmNotFound();
             }
-            return success;
+            else
+            {
+                store.AddCasette(title);
+            }
         }
 
-        private static void ShowActiveRentals()
+        /// <summary>
+        /// Removes a video title and all its casettes from the repository.
+        /// </summary>
+        private static void RemoveFilm()
         {
-            Console.WriteLine("You are currently renting:");
-            Console.WriteLine();
-            foreach (var rental in store.GetActiveRentals(customerId))
+            string name = Interactor.FindFilm.GetFilmName(Interactor.REMOVE_FILM_HEADING);
+            int year = Interactor.FindFilm.GetYear();
+            var title = store.FindTitle(name, year);
+
+            if (title == null)
             {
-                Console.WriteLine("{0} ({1}) {2} days {3} Eur",
-                    rental.Casette.Title.Name, rental.Casette.Title.Type, rental.RentalDays, rental.Price);
+                Interactor.FindFilm.ShowFilmNotFound();
             }
-            Console.WriteLine();
+            else
+            {
+                store.RemoveTitle(title.Id);
+            }
         }
 
-        private static int ReadInteger(string prompt)
+        /// <summary>
+        /// Changes the type of a registered video title.
+        /// </summary>
+        private static void ChangeFilmType()
         {
-            Console.WriteLine(prompt);
-            bool success = false;
-            int parsed = 0;
+            string name = Interactor.FindFilm.GetFilmName(Interactor.CHANGE_FILM_TYPE_HEADING);
+            int year = Interactor.FindFilm.GetYear();
+            var title = store.FindTitle(name, year);
 
-            while (!success)
+            if (title == null)
             {
-                string entered = Console.ReadLine();
-                if (entered == string.Empty)
-                {
-                    Environment.Exit(1);
-                }
-                success = int.TryParse(entered, out parsed);
-                if (!success)
-                {
-                    Console.WriteLine("Incorrect number, please repeat (press Enter to exit):");
-                }
+                Interactor.FindFilm.ShowFilmNotFound();
             }
-            return parsed;
+            else
+            {
+                string type = Interactor.ChangeFilmType.GetFilmType();
+                var titleType = (VideoTitle.TitleType) Enum.Parse(typeof(VideoTitle.TitleType), type, true);
+                store.ChangeTitleType(title.Id, titleType);
+            }
         }
 
-        private static void ShowGoodBye()
+        /// <summary>
+        /// Displays the list of all registered films.
+        /// </summary>
+        private static void ListAllFilms()
         {
-            Console.WriteLine();
-            Console.WriteLine("No more movies. Press Enter to exit.");
-            Console.ReadLine();
+            var films = store.GetAllTitles();
+            Interactor.FilmList.ShowList(films, Interactor.ALL_FILMS_HEADING);
+        }
+
+        /// <summary>
+        /// Displays the list of all rented casettes.
+        /// </summary>
+        private static void ListAllAciveRentals()
+        {
+            var rentals = store.GetAllActiveRentals();
+            Interactor.RentalList.ShowList(rentals, Interactor.ALL_ACTIVE_RENTALS_HEADING);
+        }
+
+        /// <summary>
+        /// Creates a new customer of the rental store.
+        /// </summary>
+        private static void CreateCustomer()
+        {
+            // according to business requirements, customer doesn't have any personal information, their only attribute is ID
+            int id = store.CreateCustomer();
+            Interactor.CreateCustomer.ShowCustomer(id);
+        }
+
+        /// <summary>
+        /// Displays the list of all casettes rented at the moment by the specified customer.
+        /// </summary>
+        private static void ListCustomerRentals()
+        {
+            var customerId = Interactor.ListCustomerRentals.GetCustomerId();
+            var rentals = store.GetActiveRentals(customerId);
+            Interactor.RentalList.ShowList(rentals, Interactor.ALL_CUSTOMER_RENTALS_HEADING);
+        }
+
+        /// <summary>
+        /// Displays the list of all films available for rental, i.e. video titles for which there is at least
+        /// one casette not rented at the moment.
+        /// </summary>
+        private static void ListFilmsAvailable()
+        {
+            var films = store.GetAllTitlesOnShelf();
+            Interactor.FilmList.ShowList(films, Interactor.ALL_FILMS_AVAILABLE_HEADING);
+        }
+
+        /// <summary>
+        /// Manages the whole workflow for a film rental. This is quite spacy workflow, that is why
+        /// it is moved to a separate class.
+        /// </summary>
+        private static void RentFilm()
+        {
+            new FilmRenter(store).Rent();
+        }
+
+        /// <summary>
+        /// Allows to accept a returned casette from a customer.
+        /// </summary>
+        private static void ReturnCasette()
+        {
+            // both IDs can be known from the list of rented casettes
+            int customerId = Interactor.ReturnCasette.GetCustomerId();
+            int casetteId = Interactor.ReturnCasette.GetCasetteId();
+            store.ReturnCasette(customerId, casetteId);
+            Interactor.ReturnCasette.ShowConfirmation();
         }
     }
 }
