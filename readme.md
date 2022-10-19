@@ -1,6 +1,6 @@
 # Video Rental Store
 
-This is the test assignment accomplishment for creation of the video rental store management system. The assignment itself can be found in the VideoRentalStore_assignment.md.
+This is a test assignment accomplishment for creation of a video rental store management system. The assignment itself can be found in the VideoRentalStore_assignment.md.
 
 ## Architecture
 
